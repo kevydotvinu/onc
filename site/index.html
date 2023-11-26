@@ -78,7 +78,7 @@
                         <p>A: Defaults to <code>9</code> which means that a subnet of size <code>/23</code> is allocated
                             to each host; for example, given the default <code>10.128.0.0/14</code> cluster network,
                             this will allocate <code>10.128.0.0/23</code>, <code>10.128.2.0/23</code>,
-                            <code>10.128.4.0/23</code>, and so on. It controlls the number of Pods/node.
+                            <code>10.128.4.0/23</code>, and so on. It controlls the number of Pods per node.
                         </p>
                     </li>
                     <li>
@@ -87,12 +87,14 @@
                             cluster node network.</p>
                     </li>
                     <li>
-                        <strong>Q: I can see <code>"number-of-nodes": 514</code>. Do we really need <code>514</code>
-                            nodes?</strong>
-                        <p>A: It is calculated by dividing the number of Pods by the Pods per nodes. That is,
+                        <strong>Q: I notice <code>"number-of-nodes": 514</code> in the output. Is it necessary to have
+                            <code>514</code> nodes?</strong>
+                        <p>A: No, it is calculated by dividing the number of Pods by the Pods per nodes. That is,
                             <code>"number-of-pods": 262142 / "pods-per-node": 510 = "number-of-nodes": 514</code>.
-                            However, <code>"machine-network-nodes": 254</code> represents the number of nodes in the
-                            Machine Network.
+                            That is the number of nodes required to accommodate the 262,142 Pods. At the same time,
+                            <code>"machine-network-nodes": 254</code> represents the number of nodes available in the
+                            Machine Network. It is important to design the network with scalability in mind to handle
+                            increasing demands over time."
                         </p>
                     </li>
                     <li>
@@ -108,7 +110,13 @@
                                 target="_blank">this blog</a>. To adjust the number of Pods in a node, modify the
                             HostPrefix. The calculator also checks for network conflicts within the given network.</p>
                     </li>
-                </ul>
+                    <li>
+                        <strong>Q: How does it calculate the network information?</strong>
+                        <p>A: The network calculation is performed by
+                            <a href="https://github.com/kevydotvinu/onc/blob/main/main.go" target="_blank">this</a> Go
+                            program.</p>
+                    </li>
+                 </ul>
             </div>
         </div>
     </div>
