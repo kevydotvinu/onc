@@ -4,8 +4,7 @@ document.getElementById('serviceNetwork').value = '172.30.0.0/16';
 document.getElementById('machineNetwork').value = '192.168.1.0/24';
 
 function isValidCIDR(input) {
-    // CIDR pattern: IP followed by / and the subnet mask (e.g., 192.168.1.1/24)
-    const cidrPattern = /^(?:\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
+    const cidrPattern = /^(?:\d{1,3}\.){3}\d{1,3}\/(1[0-9]|2[0-9]|3[0-2]|[1-9])$/;
     return cidrPattern.test(input);
 }
 

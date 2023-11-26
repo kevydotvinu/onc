@@ -18,10 +18,6 @@
     <link rel="stylesheet" href="https://unpkg.com/patternfly@4.62.1/dist/css/patternfly-additions.min.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="canonical" href="https://onc.netlify.app/" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://unpkg.com/patternfly@4.62.1/dist/js/patternfly.min.js"></script>
-    <script src="script.js"></script>
     <script type="application/ld+json">
         {
           "@context": "http://schema.org",
@@ -82,7 +78,8 @@
                         <p>A: Defaults to <code>9</code> which means that a subnet of size <code>/23</code> is allocated
                             to each host; for example, given the default <code>10.128.0.0/14</code> cluster network,
                             this will allocate <code>10.128.0.0/23</code>, <code>10.128.2.0/23</code>,
-                            <code>10.128.4.0/23</code>, and so on. It controlls the number of Pods/node.</p>
+                            <code>10.128.4.0/23</code>, and so on. It controlls the number of Pods/node.
+                        </p>
                     </li>
                     <li>
                         <strong>Q: What are Cluster Network, Service Network and Machine Network?</strong>
@@ -95,7 +92,8 @@
                         <p>A: It is calculated by dividing the number of Pods by the Pods per nodes. That is,
                             <code>"number-of-pods": 262142 / "pods-per-node": 510 = "number-of-nodes": 514</code>.
                             However, <code>"machine-network-nodes": 254</code> represents the number of nodes in the
-                            Machine Network.</p>
+                            Machine Network.
+                        </p>
                     </li>
                     <li>
                         <strong>Q: How can we use this calulator effectively?</strong>
@@ -110,11 +108,15 @@
                                 target="_blank">this blog</a>. To adjust the number of Pods in a node, modify the
                             HostPrefix. The calculator also checks for network conflicts within the given network.</p>
                     </li>
-                    <!-- Add more Q&A items as needed -->
                 </ul>
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/patternfly@4.62.1/dist/js/patternfly.min.js"></script>
+    <script src="script.js"></script>
+
 </body>
 
 </html>
