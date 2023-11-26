@@ -1,96 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenShift Network Calculator</title>
-
-    <!-- Include Bootstrap CSS -->
+    <meta name="description"
+        content="This calculator provides information about OpenShift network configurations. Explore the maximum number of Pods, Services, and nodes for a given network.">
+    <meta property="og:title" content="OpenShift Network Calculator" />
+    <meta property="og:description"
+        content="Explore the maximum number of Pods, Services, and nodes for a given network." />
+    <meta property="og:url" content="https://onc.netlify.app" />
+    <title>OpenShift Network Calculator - Plan OpenShift network</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Include Font Awesome CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
-    <!-- Include PatternFly CSS -->
     <link rel="stylesheet" href="https://unpkg.com/patternfly@4.62.1/dist/css/patternfly.min.css">
     <link rel="stylesheet" href="https://unpkg.com/patternfly@4.62.1/dist/css/patternfly-additions.min.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="canonical" href="https://onc.netlify.app/" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/patternfly@4.62.1/dist/js/patternfly.min.js"></script>
+    <script src="script.js"></script>
+    <script type="application/ld+json">
+        {
+          "@context": "http://schema.org",
+          "@type": "WebPage",
+          "name": "OpenShift Network Calculator",
+          "description": "Explore the maximum number of Pods, Services, and nodes for a given network.",
+          "url": "https://onc.netlify.app"
+        }
+    </script>
+
 </head>
+
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <div class="page-header">
-        <h1>OpenShift Network Calculator</h1>
+        <div class="page-header">
+            <h1>OpenShift Network Calculator</h1>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <form>
+                    <div class="form-group">
+                        <label for="hostPrefix">Host Prefix:</label>
+                        <input type="number" class="form-control" id="hostPrefix" placeholder="Enter host prefix">
+                    </div>
+                    <div class="form-group">
+                        <label for="clusterNetwork">Cluster Network:</label>
+                        <input type="text" class="form-control" id="clusterNetwork" placeholder="Enter cluster network">
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceNetwork">Service Network:</label>
+                        <input type="text" class="form-control" id="serviceNetwork" placeholder="Enter service network">
+                    </div>
+                    <div class="form-group">
+                        <label for="machineNetwork">Machine Network:</label>
+                        <input type="text" class="form-control" id="machineNetwork" placeholder="Enter machine network">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="calculateNetwork()">Calculate</button>
+                </form>
+            </div>
+
+            <div class="col-md-6">
+                <pre id="result"></pre>
+            </div>
+        </div>
+
     </div>
 
     <div class="row">
-        <div class="col-md-6">
-            <form>
-                <div class="form-group">
-                    <label for="hostPrefix">Host Prefix:</label>
-                    <input type="number" class="form-control" id="hostPrefix" placeholder="Enter host prefix">
-                </div>
-                <div class="form-group">
-                    <label for="clusterNetwork">Cluster Network:</label>
-                    <input type="text" class="form-control" id="clusterNetwork" placeholder="Enter cluster network">
-                </div>
-                <div class="form-group">
-                    <label for="serviceNetwork">Service Network:</label>
-                    <input type="text" class="form-control" id="serviceNetwork" placeholder="Enter service network">
-                </div>
-                <div class="form-group">
-                    <label for="machineNetwork">Machine Network:</label>
-                    <input type="text" class="form-control" id="machineNetwork" placeholder="Enter machine network">
-                </div>
-                <button type="button" class="btn btn-primary" onclick="calculateNetwork()">Calculate</button>
-            </form>
-        </div>
-
-        <div class="col-md-6">
-            <pre id="result"></pre>
+        <div class="col-md-6 col-md-offset-3">
+            <div class="faq-container">
+                <h4>FAQ</h4>
+                <ul>
+                    <li>
+                        <strong>Q: What is HostPrefix?</strong>
+                        <p>A: Defaults to <code>9</code> which means that a subnet of size <code>/23</code> is allocated
+                            to each host; for example, given the default <code>10.128.0.0/14</code> cluster network,
+                            this will allocate <code>10.128.0.0/23</code>, <code>10.128.2.0/23</code>,
+                            <code>10.128.4.0/23</code>, and so on. It controlls the number of Pods/node.</p>
+                    </li>
+                    <li>
+                        <strong>Q: What are Cluster Network, Service Network and Machine Network?</strong>
+                        <p>A: ClusterNetwork is used by Pods, Service Network is for Services and MachineNetwork is the
+                            cluster node network.</p>
+                    </li>
+                    <li>
+                        <strong>Q: I can see <code>"number-of-nodes": 514</code>. Do we really need <code>514</code>
+                            nodes?</strong>
+                        <p>A: It is calculated by dividing the number of Pods by the Pods per nodes. That is,
+                            <code>"number-of-pods": 262142 / "pods-per-node": 510 = "number-of-nodes": 514</code>.
+                            However, <code>"machine-network-nodes": 254</code> represents the number of nodes in the
+                            Machine Network.</p>
+                    </li>
+                    <li>
+                        <strong>Q: How can we use this calulator effectively?</strong>
+                        <p>A: This calculator offers the maximum number of Pods, Services, and nodes for the given
+                            network. However, it doesn't imply the obligation to utilize the entire capacity; these
+                            values merely represent the scalable size. To begin, you can calculate the number of nodes
+                            by dividing the required Pods by <code>500</code>. <a
+                                href="https://cloud.redhat.com/blog/500_pods_per_node" target="_blank"> This blog
+                            </a>explains how we arrived at the value <code>500</code>. Additionally, it can potentially
+                            go as high as <code>2500</code> under certain conditions, as indicated in <a
+                                href="https://cloud.redhat.com/blog/running-2500-pods-per-node-on-ocp-4.13"
+                                target="_blank">this blog</a>. To adjust the number of Pods in a node, modify the
+                            HostPrefix. The calculator also checks for network conflicts within the given network.</p>
+                    </li>
+                    <!-- Add more Q&A items as needed -->
+                </ul>
+            </div>
         </div>
     </div>
-
-</div>
-
-<div class="row">
-    <div class="col-md-6 col-md-offset-3">
-<div class="faq-container">
-    <h4>FAQ</h4>
-    <ul>
-        <li>
-            <strong>Q: What is HostPrefix?</strong>
-            <p>A: Defaults to <code>9</code> which means that a subnet of size <code>/23</code> is allocated to each host; for example, given the default <code>10.128.0.0/14</code> cluster network, this will allocate <code>10.128.0.0/23</code>, <code>10.128.2.0/23</code>, <code>10.128.4.0/23</code>, and so on. It controlls the number of Pods/node.</p>
-        </li>
-        <li>
-            <strong>Q: What are Cluster Network, Service Network and Machine Network?</strong>
-            <p>A: ClusterNetwork is used by Pods, Service Network is for Services and MachineNetwork is the cluster node network.</p>
-        </li>
-         <li>
-            <strong>Q: I can see <code>"number-of-nodes": 514</code>. Do we really need <code>514</code> nodes?</strong>
-            <p>A: It is calculated by dividing the number of Pods by the Pods per nodes. That is, <code>"number-of-pods": 262142 / "pods-per-node": 510 = "number-of-nodes": 514</code>. However, <code>"machine-network-nodes": 254</code> represents the number of nodes in the Machine Network.</p>
-        </li>
-         <li>
-            <strong>Q: How can we use this calulator effectively?</strong>
-            <p>A: This calculator offers the maximum number of Pods, Services, and nodes for the given network. However, it doesn't imply the obligation to utilize the entire capacity; these values merely represent the scalable size. To begin, you can calculate the number of nodes by dividing the required Pods by <code>500</code>. <a href="https://cloud.redhat.com/blog/500_pods_per_node" target="_blank"> This blog </a>explains how we arrived at the value <code>500</code>. Additionally, it can potentially go as high as <code>2500</code> under certain conditions, as indicated in <a href="https://cloud.redhat.com/blog/running-2500-pods-per-node-on-ocp-4.13" target="_blank">this blog</a>. To adjust the number of Pods in a node, modify the HostPrefix. The calculator also checks for network conflicts within the given network.</p>
-        </li>
-       <!-- Add more Q&A items as needed -->
-    </ul>
-</div>
-</div>
-</div>
-
-<!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Include Bootstrap JS -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-<!-- Include PatternFly JS -->
-<script src="https://unpkg.com/patternfly@4.62.1/dist/js/patternfly.min.js"></script>
-
-<script src="script.js"></script>
-
 </body>
+
 </html>

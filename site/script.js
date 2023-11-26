@@ -44,12 +44,12 @@ function calculateNetwork() {
         },
         body: JSON.stringify(request),
     })
-    .then(response => response.json())
-    .then(data => {
-        // Display the response
-        document.getElementById('result').innerText = JSON.stringify(data, null, 2);
-    })
-    .catch(error => {
-        alert('Error sending request to server: ' + error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            // Display the response
+            document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+            alert('Error sending request to server: ' + error);
+        });
 }
