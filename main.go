@@ -42,20 +42,14 @@ func calculateNetwork(request Request) (*Response, error) {
 	podNetwork := request.ClusterNetwork
 	serviceNetwork := request.ServiceNetwork
 	machineNetwork := request.MachineNetwork
+	hostPrefix := request.HostPrefix
 
-	_, cNet, err := net.ParseCIDR(podNetwork)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing CIDR: %v", err)
-	}
-
-	clusterNetworkPrefix, err := strconv.Atoi(strings.Split(cNet.String(), "/")[1])
+	numPods, err := countIPs(podNetwork)
 	if err != nil {
 		return nil, err
 	}
-	numPods := int(float64(math.Pow(2, float64(32-clusterNetworkPrefix)) - 2))
-	availableHostPrefix := 32 - request.HostPrefix
-	podsPerNode := int(math.Pow(2, float64(availableHostPrefix)) - 2)
-	numNodes := numPods / podsPerNode
+	numNodes := len(splitSubnet(podNetwork, hostPrefix))
+	podsPerNode := numPods / numNodes
 
 	numServices, err := countIPs(serviceNetwork)
 	if err != nil {
@@ -69,7 +63,7 @@ func calculateNetwork(request Request) (*Response, error) {
 
 	conflict, err := checkCIDRConflict(request.ClusterNetwork, request.ServiceNetwork, request.MachineNetwork)
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("error:", err)
 		return nil, err
 	}
 
@@ -102,6 +96,37 @@ func countIPs(cidr string) (int, error) {
 	}
 	IPs := int(float64(math.Pow(2, float64(32-networkPrefix)) - 2))
 	return IPs, nil
+}
+
+func splitSubnet(subnet string, prefixLength int) []*net.IPNet {
+	var subnets []*net.IPNet
+
+	_, snet, err := net.ParseCIDR(subnet)
+	if err != nil {
+		fmt.Println("error parsing subnet:", err)
+		return subnets
+	}
+	ip := snet.IP
+	ones, _ := snet.Mask.Size()
+	subnetCount := 2 << uint(prefixLength-ones-1)
+	stepSize := 1 << uint(32-ones)
+
+	for i := 0; i < subnetCount; i++ {
+		newIP := make(net.IP, len(ip))
+		copy(newIP, ip)
+		for j := 3; j >= 0; j-- {
+			newIP[j] += byte((i * stepSize) >> uint((3-j)*8))
+		}
+
+		newSubnet := &net.IPNet{
+			IP:   newIP,
+			Mask: net.CIDRMask(prefixLength, 32),
+		}
+
+		subnets = append(subnets, newSubnet)
+	}
+
+	return subnets
 }
 
 func checkCIDRConflict(cidrs ...string) (bool, error) {
