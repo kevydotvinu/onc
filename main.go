@@ -20,15 +20,20 @@ type Request struct {
 }
 
 type Response struct {
-	PodNetwork          string `json:"pod-network"`
-	ServiceNetwork      string `json:"service-network"`
-	MachineNetwork      string `json:"machine-network"`
-	NumPods             int    `json:"number-of-pods"`
-	NumServices         int    `json:"number-of-services"`
-	NumNodes            int    `json:"number-of-nodes"`
-	PodsPerNode         int    `json:"pods-per-node"`
-	MachineNetworkNodes int    `json:"machine-network-nodes"`
-	Conflict            bool   `json:"network-conflict"`
+	PodNetwork          string      `json:"pod-network"`
+	ServiceNetwork      string      `json:"service-network"`
+	MachineNetwork      string      `json:"machine-network"`
+	NumPods             int         `json:"number-of-pods"`
+	NumServices         int         `json:"number-of-services"`
+	NumNodes            int         `json:"number-of-nodes"`
+	PodsPerNode         PodsPerNode `json:"pods-per-node"`
+	MachineNetworkNodes int         `json:"machine-network-nodes"`
+	Conflict            bool        `json:"network-conflict"`
+}
+
+type PodsPerNode struct {
+	Sdn int `json:"sdn"`
+	Ovn int `json:"ovn"`
 }
 
 func calculateNetwork(request Request) (*Response, error) {
@@ -50,6 +55,10 @@ func calculateNetwork(request Request) (*Response, error) {
 	}
 	numNodes := len(splitSubnet(podNetwork, hostPrefix))
 	podsPerNode := numPods / numNodes
+	cniPodsPerNode := PodsPerNode{
+		Sdn: podsPerNode - 2,
+		Ovn: podsPerNode - 3,
+	}
 
 	numServices, err := countIPs(serviceNetwork)
 	if err != nil {
@@ -74,7 +83,7 @@ func calculateNetwork(request Request) (*Response, error) {
 		NumPods:             numPods,
 		NumServices:         numServices,
 		NumNodes:            numNodes,
-		PodsPerNode:         podsPerNode,
+		PodsPerNode:         cniPodsPerNode,
 		MachineNetworkNodes: machineNetworkNodes,
 		Conflict:            conflict,
 	}, nil
