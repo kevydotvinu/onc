@@ -128,6 +128,10 @@ func checkCIDRConflict(cidrs ...string) (bool, error) {
 }
 
 func calculatorHandler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
+
+	// Log request
+	fmt.Printf("Incoming Request: %+v\n", request)
+
 	if request.HTTPMethod != "POST" {
 		origin := request.Headers["origin"]
 		if strings.Contains(origin, "localhost") {
@@ -164,8 +168,13 @@ func calculatorHandler(request events.APIGatewayProxyRequest) (*events.APIGatewa
 
 	output, err := json.Marshal(results)
 	if err != nil {
+		// Log error
+		fmt.Printf("Error marshaling JSON response: %v\n", err)
 		return nil, err
 	}
+
+	// Log response
+	fmt.Printf("Outgoing Response: %+v\n", string(output))
 
 	return &events.APIGatewayProxyResponse{
 		StatusCode: 200,
