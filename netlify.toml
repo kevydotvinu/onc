@@ -1,4 +1,4 @@
 [build]
-  command = "make"
+  command = "make onc"
   functions = "netlify/functions"
   publish = "site"

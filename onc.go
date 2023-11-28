@@ -1,18 +1,12 @@
-package main
+package onc
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"net"
 	"strconv"
 	"strings"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 )
-
-var version string
 
 type Request struct {
 	HostPrefix     int    `json:"hostPrefix"`
@@ -38,7 +32,7 @@ type PodsPerNode struct {
 	Ovn int `json:"ovn"`
 }
 
-func calculateNetwork(request Request) (*Response, error) {
+func CalculateNetwork(request Request) (*Response, error) {
 	networks := []string{request.ClusterNetwork, request.ServiceNetwork}
 	for _, network := range networks {
 		if !isValidCIDR(network) {
@@ -161,70 +155,4 @@ func checkCIDRConflict(cidrs ...string) (bool, error) {
 	}
 
 	return false, nil
-}
-
-func calculatorHandler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-
-	// Log request
-	fmt.Printf("Incoming Request: %+v\n", request)
-
-	if request.HTTPMethod != "POST" {
-		origin := request.Headers["origin"]
-		if strings.Contains(origin, "localhost") {
-			return &events.APIGatewayProxyResponse{
-				StatusCode: 200,
-				Headers: map[string]string{
-					"Access-Control-Allow-Origin":  origin,
-					"Access-Control-Allow-Headers": "*",
-				},
-			}, nil
-		} else {
-			return &events.APIGatewayProxyResponse{
-				StatusCode: 404,
-			}, nil
-		}
-	}
-
-	var req Request
-	if err := json.NewDecoder(strings.NewReader(request.Body)).Decode(&req); err != nil {
-		return &events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Failed to parse payload: %v", err),
-		}, nil
-	}
-
-	var results *Response
-	var err error
-	if results, err = calculateNetwork(req); err != nil {
-		return &events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Failed to make DNS request: %v", err),
-		}, nil
-	}
-
-	output, err := json.Marshal(results)
-	if err != nil {
-		// Log error
-		fmt.Printf("Error marshaling JSON response: %v\n", err)
-		return nil, err
-	}
-
-	// Log response
-	fmt.Printf("Outgoing Response: %+v\n", string(output))
-
-	return &events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Headers: map[string]string{
-			"Content-Type":                 "application/json",
-			"Access-Control-Allow-Origin":  "*",
-			"Access-Control-Allow-Headers": "*",
-		},
-		Body:            string(output),
-		IsBase64Encoded: false,
-	}, nil
-}
-
-func main() {
-	fmt.Printf("Starting onc, version %s\n", version)
-	lambda.Start(calculatorHandler)
 }
