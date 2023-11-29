@@ -69,56 +69,54 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6 col-md-offset-3">
-            <div class="faq-container">
-                <h4>FAQ</h4>
-                <ul>
-                    <li>
-                        <strong>Q: What is HostPrefix?</strong>
-                        <p>A: Defaults to <code>9</code> which means that a subnet of size <code>/23</code> is allocated
-                            to each host; for example, given the default <code>10.128.0.0/14</code> cluster network,
-                            this will allocate <code>10.128.0.0/23</code>, <code>10.128.2.0/23</code>,
-                            <code>10.128.4.0/23</code>, and so on. It controlls the number of Pods per node.
-                        </p>
-                    </li>
-                    <li>
-                        <strong>Q: What are Cluster Network, Service Network and Machine Network?</strong>
-                        <p>A: ClusterNetwork is used by Pods, Service Network is for Services and MachineNetwork is the
-                            cluster node network.</p>
-                    </li>
-                    <li>
-                        <strong>Q: I notice <code>"number-of-nodes": 514</code> in the output. Is it necessary to have
-                            <code>514</code> nodes?</strong>
-                        <p>A: No, it is calculated by dividing the number of Pods by the Pods per nodes. That is,
-                            <code>"number-of-pods": 262142 / "pods-per-node": 510 = "number-of-nodes": 514</code>.
-                            That is the number of nodes required to accommodate the 262,142 Pods. At the same time,
-                            <code>"machine-network-nodes": 254</code> represents the number of nodes available in the
-                            Machine Network. It is important to design the network with scalability in mind to handle
-                            increasing demands over time."
-                        </p>
-                    </li>
-                    <li>
-                        <strong>Q: How can we use this calulator effectively?</strong>
-                        <p>A: This calculator offers the maximum number of Pods, Services, and nodes for the given
-                            network. However, it doesn't imply the obligation to utilize the entire capacity; these
-                            values merely represent the scalable size. To begin, you can calculate the number of nodes
-                            by dividing the required Pods by <code>500</code>. <a
-                                href="https://cloud.redhat.com/blog/500_pods_per_node" target="_blank"> This blog
-                            </a>explains how we arrived at the value <code>500</code>. Additionally, it can potentially
-                            go as high as <code>2500</code> under certain conditions, as indicated in <a
-                                href="https://cloud.redhat.com/blog/running-2500-pods-per-node-on-ocp-4.13"
-                                target="_blank">this blog</a>. To adjust the number of Pods in a node, modify the
-                            HostPrefix. The calculator also checks for network conflicts within the given network.</p>
-                    </li>
-                    <li>
-                        <strong>Q: How does it calculate the network information?</strong>
-                        <p>A: The network calculation is performed by
-                            <a href="https://github.com/kevydotvinu/onc/blob/main/onc.go" target="_blank">this</a> Go
-                            program.
-                        </p>
-                    </li>
-                </ul>
-            </div>
+        <div class="faq-container">
+            <h4>FAQ</h4>
+            <ul>
+                <li>
+                    <strong>Q: What is HostPrefix?</strong>
+                    <p>A: Defaults to <code>9</code> which means that a subnet of size <code>/23</code> is allocated
+                        to each host; for example, given the default <code>10.128.0.0/14</code> cluster network,
+                        this will allocate <code>10.128.0.0/23</code>, <code>10.128.2.0/23</code>,
+                        <code>10.128.4.0/23</code>, and so on. It controlls the number of Pods per node.
+                    </p>
+                </li>
+                <li>
+                    <strong>Q: What are Cluster Network, Service Network and Machine Network?</strong>
+                    <p>A: ClusterNetwork is used by Pods, Service Network is for Services and MachineNetwork is the
+                        cluster node network.</p>
+                </li>
+                <li>
+                    <strong>Q: I notice <code>"number-of-nodes": 514</code> in the output. Is it necessary to have
+                        <code>514</code> nodes?</strong>
+                    <p>A: No, it is calculated by dividing the number of Pods by the Pods per nodes. That is,
+                        <code>"number-of-pods": 262142 / "pods-per-node": 510 = "number-of-nodes": 514</code>.
+                        That is the number of nodes required to accommodate the 262,142 Pods. At the same time,
+                        <code>"machine-network-nodes": 254</code> represents the number of nodes available in the
+                        Machine Network. It is important to design the network with scalability in mind to handle
+                        increasing demands over time."
+                    </p>
+                </li>
+                <li>
+                    <strong>Q: How can we use this calulator effectively?</strong>
+                    <p>A: This calculator offers the maximum number of Pods, Services, and nodes for the given
+                        network. However, it doesn't imply the obligation to utilize the entire capacity; these
+                        values merely represent the scalable size. To begin, you can calculate the number of nodes
+                        by dividing the required Pods by <code>500</code>. <a
+                            href="https://cloud.redhat.com/blog/500_pods_per_node" target="_blank"> This blog
+                        </a>explains how we arrived at the value <code>500</code>. Additionally, it can potentially
+                        go as high as <code>2500</code> under certain conditions, as indicated in <a
+                            href="https://cloud.redhat.com/blog/running-2500-pods-per-node-on-ocp-4.13"
+                            target="_blank">this blog</a>. To adjust the number of Pods in a node, modify the
+                        HostPrefix. The calculator also checks for network conflicts within the given network.</p>
+                </li>
+                <li>
+                    <strong>Q: How does it calculate the network information?</strong>
+                    <p>A: The network calculation is performed by
+                        <a href="https://github.com/kevydotvinu/onc/blob/main/onc.go" target="_blank">this</a> Go
+                        program.
+                    </p>
+                </li>
+            </ul>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
