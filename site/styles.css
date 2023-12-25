@@ -1,0 +1,29 @@
+body {
+    font-family: "Red Hat Text", Arial, sans-serif;
+    margin: 20px;
+}
+.main-container {
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+}
+.container,
+.faq-container {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+pre {
+    margin-top: 20px;
+    white-space: no-wrap;
+    height: 390px;
+    overflow-x: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.faq-container {
+    padding: 20px;
+}
