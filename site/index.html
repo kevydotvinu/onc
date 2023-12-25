@@ -28,22 +28,22 @@
         <div class="col-md-6">
             <form>
                 <div class="form-group">
-                    <label for="hostPrefix">Host Prefix:</label>
-                    <input type="number" class="form-control" id="hostPrefix" placeholder="Enter host prefix">
-                </div>
-                <div class="form-group">
                     <label for="clusterNetwork">Cluster Network:</label>
                     <input type="text" class="form-control" id="clusterNetwork" placeholder="Enter cluster network">
+                </div>
+                <div class="form-group">
+                    <label for="hostPrefix">Host Prefix:</label>
+                    <input type="number" class="form-control" id="hostPrefix" placeholder="Enter host prefix">
                 </div>
                 <div class="form-group">
                     <label for="serviceNetwork">Service Network:</label>
                     <input type="text" class="form-control" id="serviceNetwork" placeholder="Enter service network">
                 </div>
                 <div class="form-group">
-                    <label for="cni">CNI</label>
-                    <select class="form-control" id="dropdownSelection">
-                        <option value="option1">OpenShift SDN</option>
-                        <option value="option2">OVN Kubernetes</option>
+                    <label for="cni">CNI:</label>
+                    <select class="form-control" id="cni">
+                        <option value="ovn-kubernetes">OVN Kubernetes</option>
+                        <option value="openshift-sdn">OpenShift SDN</option>
                     </select>
                 </div>
                 <div class="form-group">

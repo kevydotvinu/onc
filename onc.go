@@ -12,30 +12,21 @@ type Request struct {
 	HostPrefix     int    `json:"hostPrefix"`
 	ClusterNetwork string `json:"clusterNetwork"`
 	ServiceNetwork string `json:"serviceNetwork"`
+	Cni            string `json:"cni"`
 	MachineNetwork string `json:"machineNetwork"`
 }
 
 type Response struct {
-	PodNetwork          string      `json:"pod-network"`
-	ServiceNetwork      string      `json:"service-network"`
-	MachineNetwork      string      `json:"machine-network"`
-	NumPods             int         `json:"number-of-pods"`
-	NumServices         int         `json:"number-of-services"`
-	NumNodes            int         `json:"number-of-nodes"`
-	PodsPerNode         PodsPerNode `json:"pods-per-node"`
-	MachineNetworkNodes int         `json:"machine-network-nodes"`
-	Conflicts           Conflicts   `json:"conflict"`
-	Cni                 string      `json:"cni"`
-}
-
-type PodsPerNode struct {
-	Sdn int `json:"sdn"`
-	Ovn int `json:"ovn"`
-}
-
-type Conflicts struct {
-	Network bool `json:"network"`
-	Ovn     bool `json:"ovn"`
+	PodNetwork          string `json:"pod-network"`
+	ServiceNetwork      string `json:"service-network"`
+	MachineNetwork      string `json:"machine-network"`
+	Cni                 string `json:"cni"`
+	NumPods             int    `json:"number-of-pods"`
+	NumServices         int    `json:"number-of-services"`
+	NumNodes            int    `json:"number-of-nodes"`
+	PodsPerNode         int    `json:"pods-per-node"`
+	MachineNetworkNodes int    `json:"machine-network-nodes"`
+	Conflicts           bool   `json:"network-conflict"`
 }
 
 func CalculateNetwork(request Request) (*Response, error) {
@@ -50,6 +41,7 @@ func CalculateNetwork(request Request) (*Response, error) {
 	serviceNetwork := request.ServiceNetwork
 	machineNetwork := request.MachineNetwork
 	hostPrefix := request.HostPrefix
+	cni := request.Cni
 
 	numPods, err := countIPs(podNetwork)
 	if err != nil {
@@ -63,9 +55,12 @@ func CalculateNetwork(request Request) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	podsPerNode := PodsPerNode{
-		Sdn: totalPodsPerNode - 2,
-		Ovn: totalPodsPerNode - 3,
+
+	var podsPerNode int
+	if cni == "ovn-kubernetes" {
+		podsPerNode = totalPodsPerNode - 3
+	} else if cni == "openshift-sdn" {
+		podsPerNode = totalPodsPerNode - 2
 	}
 
 	numServices, err := countIPs(serviceNetwork)
@@ -78,7 +73,7 @@ func CalculateNetwork(request Request) (*Response, error) {
 		return nil, err
 	}
 
-	networkConflicts, err := checkCIDRConflict(request.ClusterNetwork, request.ServiceNetwork, request.MachineNetwork)
+	sdnConflicts, err := checkCIDRConflict(request.ClusterNetwork, request.ServiceNetwork, request.MachineNetwork)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return nil, err
@@ -93,9 +88,11 @@ func CalculateNetwork(request Request) (*Response, error) {
 		return nil, err
 	}
 
-	conflicts := Conflicts{
-		Network: networkConflicts,
-		Ovn:     ovnConflicts,
+	var conflicts bool
+	if cni == "ovn-kubernetes" {
+		conflicts = ovnConflicts
+	} else if cni == "openshift-sdn" {
+		conflicts = sdnConflicts
 	}
 
 	return &Response{
@@ -108,6 +105,7 @@ func CalculateNetwork(request Request) (*Response, error) {
 		PodsPerNode:         podsPerNode,
 		MachineNetworkNodes: machineNetworkNodes,
 		Conflicts:           conflicts,
+		Cni:                 cni,
 	}, nil
 }
 
