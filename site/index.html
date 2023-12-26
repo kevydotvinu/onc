@@ -80,6 +80,10 @@
             <strong>Q: How can we use this calulator effectively?</strong>
             <p>A: This calculator offers the maximum number of Pods, Services, and nodes for the given network. However, it doesn't imply the obligation to utilize the entire capacity; these values merely represent the scalable size. To begin, you can calculate the number of nodes by dividing the required Pods by <code>500</code>. <a href="https://cloud.redhat.com/blog/500_pods_per_node" target="_blank"> This blog </a>explains how we arrived at the value <code>500</code>. Additionally, it can potentially go as high as <code>2500</code> under certain conditions, as indicated in <a href="https://cloud.redhat.com/blog/running-2500-pods-per-node-on-ocp-4.13" target="_blank">this blog</a>. To adjust the number of Pods in a node, modify the HostPrefix. The calculator also checks for network conflicts within the given network.</p>
         </li>
+         <li>
+            <strong>Q: What is the reason behind network conflicts being exclusive to OVN-Kubernetes?</strong>
+	    <p>A: The OVN-Kubernetes CNI exhibits network conflicts if the IP ranges <code>100.88.0.0/16</code> or <code>100.64.0.0/16</code> are utilized. The OVN-Kubernetes uses these for the <code>TransitSwitchSubnet</code> and <code>JoinSubnet</code>. It is crucial to refrain from using these IP ranges in both the internal and external networks of the cluster to prevent conflicts. The <code>JoinSubnet</code> can be customized at the time of OVN-kubernetes migration by specifying the <code>v4InternalSubnet</code> <code>spec</code> under the <code>spec.defaultNetwork.ovnKubernetesConfig</code> object definition.</p>
+        </li>
        <!-- Add more Q&A items as needed -->
     </ul>
 </div>
