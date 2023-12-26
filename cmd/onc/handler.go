@@ -9,6 +9,11 @@ import (
 )
 
 func calculatorHandler(w http.ResponseWriter, r *http.Request) {
+
+	type ErrorResponse struct {
+		Error string `json:"error"`
+	}
+
 	client := r.RemoteAddr
 	var request onc.Request
 	decoder := json.NewDecoder(r.Body)
@@ -27,18 +32,19 @@ func calculatorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response, err := onc.CalculateNetwork(request)
+	var jsonResponse []byte
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error parsing CIDR: %v", err), http.StatusBadRequest)
-		w.Header().Set("Content-Type", "application/json")
-		jsonError, err := json.Marshal(err)
-		if err != nil {
-			return
+		errorResponse := ErrorResponse{
+			Error: fmt.Sprintf("failed calculation: %v", err),
 		}
-		w.Write(jsonError)
+		jsonResponse, _ = json.Marshal(errorResponse)
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, string(jsonResponse), http.StatusInternalServerError)
+		fmt.Println("Response:", string(jsonResponse))
 		return
 	}
 
-	jsonResponse, err := json.Marshal(response)
+	jsonResponse, err = json.Marshal(response)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error encoding JSON: %v", err), http.StatusInternalServerError)
 		return

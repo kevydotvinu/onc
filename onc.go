@@ -48,12 +48,11 @@ func CalculateNetwork(request Request) (*Response, error) {
 		return nil, err
 	}
 	numNodes := len(splitSubnet(podNetwork, hostPrefix))
-	if numNodes == 0 {
-		return nil, fmt.Errorf("Number of nodes is 0")
-	}
-	totalPodsPerNode := numPods / numNodes
-	if err != nil {
-		return nil, err
+	var totalPodsPerNode int
+	if numNodes != 0 {
+		totalPodsPerNode = numPods / numNodes
+	} else {
+		return nil, fmt.Errorf("numNodes is 0")
 	}
 
 	var podsPerNode int
