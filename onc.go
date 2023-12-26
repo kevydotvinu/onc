@@ -17,16 +17,20 @@ type Request struct {
 }
 
 type Response struct {
-	PodNetwork          string `json:"pod-network"`
-	ServiceNetwork      string `json:"service-network"`
-	MachineNetwork      string `json:"machine-network"`
-	Cni                 string `json:"cni"`
-	NumPods             int    `json:"number-of-pods"`
-	NumServices         int    `json:"number-of-services"`
-	NumNodes            int    `json:"number-of-nodes"`
-	PodsPerNode         int    `json:"pods-per-node"`
-	MachineNetworkNodes int    `json:"machine-network-nodes"`
-	Conflicts           bool   `json:"network-conflict"`
+	PodNetwork     string   `json:"pod-network"`
+	ServiceNetwork string   `json:"service-network"`
+	MachineNetwork string   `json:"machine-network"`
+	Cni            string   `json:"cni"`
+	NumPods        int      `json:"number-of-pods"`
+	NumServices    int      `json:"number-of-services"`
+	NumNodes       NumNodes `json:"number-of-nodes"`
+	PodsPerNode    int      `json:"pods-per-node"`
+	Conflicts      bool     `json:"network-conflict"`
+}
+
+type NumNodes struct {
+	Want int `json:"want"`
+	Have int `json:"have"`
 }
 
 func CalculateNetwork(request Request) (*Response, error) {
@@ -72,6 +76,11 @@ func CalculateNetwork(request Request) (*Response, error) {
 		return nil, err
 	}
 
+	clusterNumNodes := NumNodes{
+		Want: numNodes,
+		Have: machineNetworkNodes,
+	}
+
 	sdnConflicts, err := checkCIDRConflict(request.ClusterNetwork, request.ServiceNetwork, request.MachineNetwork)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -95,16 +104,15 @@ func CalculateNetwork(request Request) (*Response, error) {
 	}
 
 	return &Response{
-		PodNetwork:          podNetwork,
-		ServiceNetwork:      serviceNetwork,
-		MachineNetwork:      machineNetwork,
-		NumPods:             numPods,
-		NumServices:         numServices,
-		NumNodes:            numNodes,
-		PodsPerNode:         podsPerNode,
-		MachineNetworkNodes: machineNetworkNodes,
-		Conflicts:           conflicts,
-		Cni:                 cni,
+		PodNetwork:     podNetwork,
+		ServiceNetwork: serviceNetwork,
+		MachineNetwork: machineNetwork,
+		NumPods:        numPods,
+		NumServices:    numServices,
+		NumNodes:       clusterNumNodes,
+		PodsPerNode:    podsPerNode,
+		Conflicts:      conflicts,
+		Cni:            cni,
 	}, nil
 }
 
