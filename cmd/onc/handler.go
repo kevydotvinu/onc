@@ -12,6 +12,10 @@ import (
 
 func calculatorHandler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 
+	type ErrorResponse struct {
+		Error string `json:"error"`
+	}
+
 	// Log request
 	fmt.Printf("Incoming Request: %+v\n", request)
 
@@ -43,9 +47,17 @@ func calculatorHandler(request events.APIGatewayProxyRequest) (*events.APIGatewa
 	var results *onc.Response
 	var err error
 	if results, err = onc.CalculateNetwork(req); err != nil {
+		errorResponse := ErrorResponse{
+			Error: fmt.Sprintf("failed calculation: %v", err),
+		}
+		output, _ := json.Marshal(errorResponse)
 		return &events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       fmt.Sprintf("Failed to make DNS request: %v", err),
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
+			Body:            string(output),
+			IsBase64Encoded: false,
 		}, nil
 	}
 

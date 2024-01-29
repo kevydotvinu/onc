@@ -12,31 +12,32 @@ type Request struct {
 	HostPrefix     int    `json:"hostPrefix"`
 	ClusterNetwork string `json:"clusterNetwork"`
 	ServiceNetwork string `json:"serviceNetwork"`
+	Cni            string `json:"cni"`
 	MachineNetwork string `json:"machineNetwork"`
 }
 
 type Response struct {
-	PodNetwork          string      `json:"pod-network"`
-	ServiceNetwork      string      `json:"service-network"`
-	MachineNetwork      string      `json:"machine-network"`
-	NumPods             int         `json:"number-of-pods"`
-	NumServices         int         `json:"number-of-services"`
-	NumNodes            int         `json:"number-of-nodes"`
-	PodsPerNode         PodsPerNode `json:"pods-per-node"`
-	MachineNetworkNodes int         `json:"machine-network-nodes"`
-	Conflict            bool        `json:"network-conflict"`
+	PodNetwork     string   `json:"pod-network"`
+	ServiceNetwork string   `json:"service-network"`
+	MachineNetwork string   `json:"machine-network"`
+	Cni            string   `json:"cni"`
+	NumPods        int      `json:"number-of-pods"`
+	NumServices    int      `json:"number-of-services"`
+	NumNodes       NumNodes `json:"number-of-nodes"`
+	PodsPerNode    int      `json:"pods-per-node"`
+	Conflicts      bool     `json:"network-conflict"`
 }
 
-type PodsPerNode struct {
-	Sdn int `json:"sdn"`
-	Ovn int `json:"ovn"`
+type NumNodes struct {
+	Want int `json:"want"`
+	Have int `json:"have"`
 }
 
 func CalculateNetwork(request Request) (*Response, error) {
 	networks := []string{request.ClusterNetwork, request.ServiceNetwork}
 	for _, network := range networks {
 		if !isValidCIDR(network) {
-			return nil, fmt.Errorf("invalid network CIDR: %s", network)
+			return nil, fmt.Errorf("Invalid network CIDR: %s", network)
 		}
 	}
 
@@ -44,16 +45,25 @@ func CalculateNetwork(request Request) (*Response, error) {
 	serviceNetwork := request.ServiceNetwork
 	machineNetwork := request.MachineNetwork
 	hostPrefix := request.HostPrefix
+	cni := request.Cni
 
 	numPods, err := countIPs(podNetwork)
 	if err != nil {
 		return nil, err
 	}
 	numNodes := len(splitSubnet(podNetwork, hostPrefix))
-	podsPerNode := numPods / numNodes
-	cniPodsPerNode := PodsPerNode{
-		Sdn: podsPerNode - 2,
-		Ovn: podsPerNode - 3,
+	var totalPodsPerNode int
+	if numNodes != 0 {
+		totalPodsPerNode = numPods / numNodes
+	} else {
+		return nil, fmt.Errorf("numNodes is 0")
+	}
+
+	var podsPerNode int
+	if cni == "ovn-kubernetes" {
+		podsPerNode = totalPodsPerNode - 3
+	} else if cni == "openshift-sdn" {
+		podsPerNode = totalPodsPerNode - 2
 	}
 
 	numServices, err := countIPs(serviceNetwork)
@@ -66,22 +76,43 @@ func CalculateNetwork(request Request) (*Response, error) {
 		return nil, err
 	}
 
-	conflict, err := checkCIDRConflict(request.ClusterNetwork, request.ServiceNetwork, request.MachineNetwork)
+	clusterNumNodes := NumNodes{
+		Want: numNodes,
+		Have: machineNetworkNodes,
+	}
+
+	sdnConflicts, err := checkCIDRConflict(request.ClusterNetwork, request.ServiceNetwork, request.MachineNetwork)
 	if err != nil {
-		fmt.Println("error:", err)
+		fmt.Println("Error:", err)
 		return nil, err
 	}
 
+	joinSwitch := "100.64.0.0/16"
+	trasitSwitch := "100.88.0.0/16"
+
+	ovnConflicts, err := checkCIDRConflict(request.ClusterNetwork, request.ServiceNetwork, request.MachineNetwork, joinSwitch, trasitSwitch)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
+	}
+
+	var conflicts bool
+	if cni == "ovn-kubernetes" {
+		conflicts = ovnConflicts
+	} else if cni == "openshift-sdn" {
+		conflicts = sdnConflicts
+	}
+
 	return &Response{
-		PodNetwork:          podNetwork,
-		ServiceNetwork:      serviceNetwork,
-		MachineNetwork:      machineNetwork,
-		NumPods:             numPods,
-		NumServices:         numServices,
-		NumNodes:            numNodes,
-		PodsPerNode:         cniPodsPerNode,
-		MachineNetworkNodes: machineNetworkNodes,
-		Conflict:            conflict,
+		PodNetwork:     podNetwork,
+		ServiceNetwork: serviceNetwork,
+		MachineNetwork: machineNetwork,
+		NumPods:        numPods,
+		NumServices:    numServices,
+		NumNodes:       clusterNumNodes,
+		PodsPerNode:    podsPerNode,
+		Conflicts:      conflicts,
+		Cni:            cni,
 	}, nil
 }
 
@@ -108,7 +139,7 @@ func splitSubnet(subnet string, prefixLength int) []*net.IPNet {
 
 	_, snet, err := net.ParseCIDR(subnet)
 	if err != nil {
-		fmt.Println("error parsing subnet:", err)
+		fmt.Println("Error parsing original subnet:", err)
 		return subnets
 	}
 	ip := snet.IP

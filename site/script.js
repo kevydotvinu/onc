@@ -18,6 +18,7 @@ function calculateNetwork() {
     const clusterNetwork = document.getElementById('clusterNetwork').value;
     const serviceNetwork = document.getElementById('serviceNetwork').value;
     const machineNetwork = document.getElementById('machineNetwork').value;
+    const cni = document.getElementById('cni').value;
 
     // Simple validation
     if (!isValidHostPrefix(hostPrefix) || !isValidCIDR(clusterNetwork) || !isValidCIDR(serviceNetwork) || !isValidCIDR(machineNetwork)) {
@@ -30,7 +31,8 @@ function calculateNetwork() {
         hostPrefix: parseInt(hostPrefix),
         clusterNetwork: clusterNetwork,
         serviceNetwork: serviceNetwork,
-        machineNetwork: machineNetwork
+        machineNetwork: machineNetwork,
+	cni: cni
     };
 
     // Send the request to the Go server
