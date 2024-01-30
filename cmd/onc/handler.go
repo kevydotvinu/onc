@@ -20,20 +20,14 @@ func calculatorHandler(request events.APIGatewayProxyRequest) (*events.APIGatewa
 	fmt.Printf("Incoming Request: %+v\n", request)
 
 	if request.HTTPMethod != "POST" {
-		origin := request.Headers["origin"]
-		if strings.Contains(origin, "localhost") {
-			return &events.APIGatewayProxyResponse{
-				StatusCode: 200,
-				Headers: map[string]string{
-					"Access-Control-Allow-Origin":  origin,
-					"Access-Control-Allow-Headers": "*",
-				},
-			}, nil
-		} else {
-			return &events.APIGatewayProxyResponse{
-				StatusCode: 404,
-			}, nil
-		}
+		return &events.APIGatewayProxyResponse{
+			StatusCode: 200,
+			Headers: map[string]string{
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "*",
+				"Access-Control-Allow-Methods": "OPTIONS, POST",
+			},
+		}, nil
 	}
 
 	var req onc.Request
@@ -54,7 +48,10 @@ func calculatorHandler(request events.APIGatewayProxyRequest) (*events.APIGatewa
 		return &events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Headers: map[string]string{
-				"Content-Type": "application/json",
+				"Content-Type":                 "application/json",
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "*",
+				"Access-Control-Allow-Methods": "OPTIONS, POST",
 			},
 			Body:            string(output),
 			IsBase64Encoded: false,
