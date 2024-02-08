@@ -73,8 +73,8 @@
             <p>A: ClusterNetwork is used by Pods, Service Network is for Services and MachineNetwork is the cluster node network.</p>
         </li>
          <li>
-            <strong>Q: I can see <code>"number-of-nodes": 514</code>. Do we really need <code>514</code> nodes?</strong>
-            <p>A: It is calculated by dividing the number of Pods by the Pods per nodes. That is, <code>"number-of-pods": 262142 / "pods-per-node": 510 = "number-of-nodes": 514</code>. However, <code>"machine-network-nodes": 254</code> represents the number of nodes in the Machine Network.</p>
+            <strong>Q: I can see <code>"number-of-nodes":{"want":512}</code>. Do we really need <code>512</code> nodes?</strong>
+            <p>A: It is calculated by dividing the number of Pods by the Pods per nodes. That is, <code>"number-of-pods": 262142 / "pods-per-node": 508 = "number-of-nodes": 512</code>. However, <code>"number-of-nodes":{"have":254}</code> represents the number of nodes in the Machine Network.</p>
         </li>
          <li>
             <strong>Q: How can we use this calulator effectively?</strong>
