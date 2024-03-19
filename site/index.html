@@ -82,7 +82,11 @@
         </li>
          <li>
             <strong>Q: What is the reason behind network conflicts being exclusive to OVN-Kubernetes?</strong>
-	    <p>A: The OVN-Kubernetes CNI exhibits network conflicts if the IP ranges <code>100.88.0.0/16</code> or <code>100.64.0.0/16</code> are utilized. The OVN-Kubernetes uses these for the <code>TransitSwitchSubnet</code> and <code>JoinSubnet</code>. It is crucial to refrain from using these IP ranges in both the internal and external networks of the cluster to prevent conflicts. The <code>JoinSubnet</code> can be customized at the time of OVN-kubernetes migration by specifying the <code>v4InternalSubnet</code> <code>spec</code> under the <code>spec.defaultNetwork.ovnKubernetesConfig</code> object definition.</p>
+	    <p>A: The OVN-Kubernetes CNI exhibits network conflicts if the IP ranges <code>100.88.0.0/16</code>, <code>100.64.0.0/16</code> and <code>169.254.169.0/29</code>(<code>InternalMasqueradeSubnet</code>) are utilized. The OVN-Kubernetes uses these for the <code>TransitSwitchSubnet</code> and <code>JoinSubnet</code>. It is crucial to refrain from using these IP ranges in both the internal and external networks of the cluster to prevent conflicts. The <code>JoinSubnet</code> can be customized at the time of OVN-kubernetes migration by specifying the <code>v4InternalSubnet</code> <code>spec</code> under the <code>spec.defaultNetwork.ovnKubernetesConfig</code> object definition.</p>
+        </li>
+         <li>
+	    <strong>Q: What does the <code>InternalMasqueradeSubnet</code> represent within the OVN-Kubernetes CNI?</strong>
+	    <p>A: The <code>internalMasqueradeSubnet</code> contains the masquerade addresses in IPv4 CIDR format used internally by OVN-Kubernetes to enable host-to-service traffic. Each host in the cluster is configured with these addresses, as well as the shared gateway bridge interface. The values can be changed after installation. The subnet chosen should not overlap with other networks specified for OVN-Kubernetes as well as other networks used on the host. Additionally, the subnet must be large enough to accommodate 6 IPs (maximum prefix length <code>/29</code>). When omitted, this means no opinion and the platform is left to choose a reasonable default which is subject to change over time. The current default subnet is <code>169.254.169.0/29</code>.</p>
         </li>
        <!-- Add more Q&A items as needed -->
     </ul>
